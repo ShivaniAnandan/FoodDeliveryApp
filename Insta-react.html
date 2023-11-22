@@ -1,0 +1,180 @@
+First, you need to install the necessary dependencies. Open your terminal and navigate to your project folder, then run the following commands:
+
+bash
+Copy code
+npm install react-redux redux
+npm install react-router-dom
+Now, let's start building the app. Create the necessary folders and files in your src folder. The folder structure should look like this:
+
+bash
+Copy code
+src
+│   App.js
+│   index.js
+│
+└───actions
+│   │   postActions.js
+│   │   commentActions.js
+│   │   authActions.js
+│
+└───components
+│   └───Post
+│   │   │   Post.js
+│   │   │   PostForm.js
+│   │   │   Comment.js
+│   │   │   CommentForm.js
+│   │
+│   └───Auth
+│       │   SignIn.js
+│       │   SignUp.js
+│
+└───reducers
+    │   postReducer.js
+    │   commentReducer.js
+    │   authReducer.js
+Next, set up your store, actions, and reducers.
+
+Here is a sample code for your store.js file:
+
+javascript
+Copy code
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import postReducer from './reducers/postReducer';
+import commentReducer from './reducers/commentReducer';
+import authReducer from './reducers/authReducer';
+
+const rootReducer = combineReducers({
+ posts: postReducer,
+ comments: commentReducer,
+ auth: authReducer
+});
+
+const store = createStore(rootReducer, applyMiddleware(thunk));
+
+export default store;
+You can follow the same approach for postActions.js, commentActions.js, authActions.js, postReducer.js, commentReducer.js, and authReducer.js.
+
+After setting up the store, actions, and reducers, you can create your components. For example, your Post.js file might look like this:
+
+javascript
+Copy code
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
+import { getPostComments } from '../actions/postActions';
+import Comment from './Comment';
+import CommentForm from './CommentForm';
+
+const Post = ({ post, getPostComments }) => {
+ const [showComments, setShowComments] = useState(false);
+
+ const handleToggleComments = () => {
+    setShowComments(!showComments);
+    getPostComments(post.id);
+ };
+
+ return (
+    <div className="post">
+      <img src={post.imageUrl} alt={post.description} />
+      <div className="post-actions">
+        <button onClick={handleToggleComments}>{showComments ? 'Hide' : 'Show'} Comments</button>
+      </div>
+      {showComments && (
+        <div className="comments">
+          {post.comments.map(comment => (
+            <Comment key={comment.id} comment={comment} />
+          ))}
+          <CommentForm postId={post.id} />
+        </div>
+      )}
+    </div>
+ );
+};
+
+const mapDispatchToProps = {
+ getPostComments
+};
+
+export default connect(null, mapDispatchToProps)(Post);
+Finally, set up your App.js file to render the Post components:
+
+javascript
+Copy code
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Post from './components/Post/Post';
+import SignIn from './components/Auth/SignIn';
+import SignUp from './components/Auth/SignUp';
+
+const App = () => {
+ return (
+    <Router>
+      <Switch>
+        <Route exact path="/" component={Post} />
+        <Route path="/signin" component={SignIn} />
+        <Route path="/signup" component={SignUp} />
+      </Switch>
+    </Router>
+ );
+};
+
+export default App;
+Make sure to update your index.js file to include the store:
+
+javascript
+Copy code
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import store from './store';
+import App from './App';
+import * as serviceWorker from './serviceWorker';
+
+ReactDOM.render(
+ <Provider store={store}>
+    <App />
+ </Provider>,
+ document.getElementById('root')
+);
+
+serviceWorker.unregister();
+Please note that this is a simplified version of a social media app. In a real-world scenario, you would need to implement user authentication, add error handling, and connect to a real database..</s><s>// ==UserScript== // @name LinkedIn Title and Company Extractor // @namespace http://tampermonkey.net/ // @version 0.1 // @description try to take over the world! // @author You // @match https://www.linkedin.com/jobs/search* // @grant none // ==/UserScript==
+
+(function() { 'use strict';
+
+Copy code
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function waitForJobCards() {
+    let jobCards = document.querySelectorAll('.job-card-container__link');
+    while (jobCards.length === 0) {
+        await sleep(100);
+        jobCards = document.querySelectorAll('.job-card-container__link');
+    }
+    return jobCards;
+}
+
+async function getJobCardDetails(jobCard) {
+    const title = jobCard.querySelector('.job-card-container__title').textContent.trim();
+    const company = jobCard.querySelector('.job-card-container__subtitle span:first-child').textContent.trim();
+    const link = jobCard.href;
+    return { title, company, link };
+}
+
+async function getAllJobCardDetails() {
+    const jobCards = await waitForJobCards();
+    let jobCardDetails = [];
+    for (let jobCard of jobCards) {
+        jobCardDetails.push(await getJobCardDetails(jobCard));
+    }
+    return jobCardDetails;
+}
+
+async function run() {
+    const jobCardDetails = await getAllJobCardDetails();
+    console.log(jobCardDetails);
+}
+
+run();
